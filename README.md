@@ -52,3 +52,7 @@ The relational schema consists of five core entities structured to optimize data
 - **HospitalProfile to BloodRequest:** `1:N` relationship allowing a verified hospital to open multiple localized requests over time.
 - **BloodRequest to DonationRecord:** `1:N` relationship aggregating multiple individual donor commitments under a specific emergency request.
 - **DonorProfile to DonationRecord:** `1:N` relationship capturing historical contribution logs for an individual volunteer across various requests.
+
+---
+
+Made with ❤ by Khaled Alabadla
