@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  قائمة الطلبات
+{% endblock %}
+
+{% block content %}
+  <h1 class="section-title">📋 طلبات الدم</h1>
+
+  {% if requests_list %}
+    <div class="requests-grid">
+      {% for req in requests_list %}
+        {% if user.role == 'donor' and req.status == 'active' %}
+          {% include 'blood_requests/request_card.html' with request=req %}
+        {% elif user.role != 'donor' %}
+          <div class="request-card blood-{{ req.blood_type_needed|slugify }}">
+            <div class="blood-type-badge blood-{{ req.blood_type_needed|slugify }}">{{ req.blood_type_needed }}</div>
+            <div class="request-info">
+              <h3>{{ req.hospital.get_full_name }}</h3>
+              <div class="text-muted small mb-2">📍 {{ req.hospital.city }}</div>
+              <div class="progress-bar-custom">
+                <div class="fill" style="width: {{ req.fulfillment_percentage }}%"></div>
+              </div>
+              <span>{{ req.bags_received }} / {{ req.bags_required }} أكياس — {{ req.get_status_display }}</span>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>لا توجد طلبات حالياً.</p>
+    </div>
+  {% endif %}
+{% endblock %}

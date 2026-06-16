@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}
+  تسجيل متبرع
+{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="auth-card">
+        <h2 class="text-center mb-4" style="display: flex; align-items: center; justify-content: center;">تسجيل متبرع جديد</h2>
+        <form method="post">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <button type="submit" class="btn btn-primary w-100 mt-3">إنشاء حساب</button>
+        </form>
+        <hr />
+        <p class="text-center mb-0">
+          لديك حساب؟ <a style="text-decoration: none; color: #c91d2e; font-weight: bold;" href="{% url 'login' %}" class="login-link">تسجيل الدخول</a>
+        </p>
+      </div>
+    </div>
+  </div>
+{% endblock %}

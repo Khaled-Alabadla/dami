@@ -1,0 +1,88 @@
+from django import forms
+from django.contrib.auth.forms import AuthenticationForm
+
+from .models import City, User
+
+
+class EmailAuthenticationForm(AuthenticationForm):
+    username = forms.EmailField(
+        label='البريد الإلكتروني',
+        widget=forms.EmailInput(attrs={'autofocus': True})
+    )
+
+
+class DonorRegistrationForm(forms.ModelForm):
+    email = forms.EmailField(label='البريد الإلكتروني', required=True)
+    first_name = forms.CharField(label='الاسم الأول', max_length=150)
+    last_name = forms.CharField(label='اسم العائلة', max_length=150)
+    phone_number = forms.CharField(label='رقم الهاتف', max_length=15)
+    city = forms.ModelChoiceField(
+        label='المدينة',
+        queryset=City.objects.all(),
+        empty_label='— اختر المدينة —',
+    )
+    blood_type = forms.ChoiceField(
+        label='فصيلة الدم',
+        choices=User.BLOOD_CHOICES,
+    )
+    password = forms.CharField(
+        label='كلمة المرور',
+        widget=forms.PasswordInput(),
+        required=True
+    )
+    password_confirm = forms.CharField(
+        label='تأكيد كلمة المرور',
+        widget=forms.PasswordInput(),
+        required=True
+    )
+
+    class Meta:
+        model = User
+        fields = (
+            'email', 'first_name', 'last_name',
+            'phone_number', 'city', 'blood_type',
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get("password")
+        password_confirm = cleaned_data.get("password_confirm")
+
+        if password and password_confirm and password != password_confirm:
+            self.add_error('password_confirm', "كلمتا المرور غير متطابقتين.")
+        return cleaned_data
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.role = 'donor'
+        user.blood_type = self.cleaned_data['blood_type']
+        user.set_password(self.cleaned_data['password'])
+        if commit:
+            user.save()
+        return user
+
+
+class UserProfileForm(forms.ModelForm):
+    first_name = forms.CharField(label='الاسم الأول / اسم الجهة', max_length=150, required=True)
+    last_name = forms.CharField(label='اسم العائلة', max_length=150, required=False)
+    phone_number = forms.CharField(label='رقم الهاتف', max_length=15, required=True)
+    city = forms.ModelChoiceField(
+        label='المدينة',
+        queryset=City.objects.all(),
+        empty_label='— اختر المدينة —',
+        required=True
+    )
+
+    class Meta:
+        model = User
+        fields = ('email', 'first_name', 'last_name', 'phone_number', 'city', 'blood_type')
+        labels = {
+            'email': 'البريد الإلكتروني',
+            'blood_type': 'فصيلة الدم',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # If user is not a donor, blood_type is not needed
+        if self.instance and self.instance.role != 'donor':
+            self.fields.pop('blood_type', None)

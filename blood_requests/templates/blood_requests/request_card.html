@@ -1,0 +1,18 @@
+<div class="request-card blood-{{ request.blood_type_needed|slugify }}" data-request-id="{{ request.id }}">
+  <div class="blood-type-badge blood-{{ request.blood_type_needed|slugify }}">{{ request.blood_type_needed }}</div>
+  <div class="request-info">
+    <h3>{{ request.hospital.get_full_name }}</h3>
+    <div class="text-muted small mb-2">📍 {{ request.hospital.city }}</div>
+    <div class="progress-bar-custom">
+      <div class="fill" style="width: {{ request.fulfillment_percentage }}%"></div>
+    </div>
+    <span>{{ request.bags_received }} / {{ request.bags_required }} أكياس</span>
+  </div>
+  {% if completed_ids and request.id in completed_ids %}
+    <button class="btn-commit btn-completed" disabled>🤲 شكراً لإسهامك، ربما يكون تبرعك هذا سبباً في إنقاذ نفس</button>
+  {% elif committed_ids and request.id in committed_ids %}
+    <button class="btn-commit btn-committed" disabled>✅ أنت ملتزم بهذه الحالة</button>
+  {% else %}
+    <button class="btn-commit" onclick="commitToDonate({{ request.id }})">أنا قادم للتبرع <img width="35px" src="{% static 'images/blood.webp' %}" alt="" /></button>
+  {% endif %}
+</div>

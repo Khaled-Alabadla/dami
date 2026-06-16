@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+  تسجيل الدخول
+{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-5">
+      <div class="auth-card">
+        <h2 class="text-center mb-4">تسجيل الدخول</h2>
+        <form method="post">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <button type="submit" class="btn btn-primary w-100 mt-3">دخول</button>
+        </form>
+        <hr />
+        <p class="text-center mb-0">
+          ليس لديك حساب؟ <a style="text-decoration: none; color: #c91d2e; font-weight: bold;" href="{% url 'register_donor' %}">تسجيل متبرع</a>
+        </p>
+      </div>
+    </div>
+  </div>
+{% endblock %}

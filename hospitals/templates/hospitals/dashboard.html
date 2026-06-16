@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  لوحة المستشفى
+{% endblock %}
+
+{% block content %}
+  <div class="dashboard-header d-flex justify-content-between align-items-center">
+    <div>
+      <h1>لوحة تحكم المستشفى</h1>
+      <p class="text-muted">{{ user.get_full_name }} — {{ user.city }}</p>
+    </div>
+    <a href="{% url 'create_blood_request' %}" class="btn btn-primary">+ طلب دم جديد</a>
+  </div>
+
+  <h2 class="section-title">⏳ متبرعون في الطريق</h2>
+  {% if pending_donations %}
+    <div class="table-responsive mb-5">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>المتبرع</th>
+            <th>فصيلة الدم</th>
+            <th>الطلب</th>
+            <th>وقت التسجيل</th>
+            <th>إجراء</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for donation in pending_donations %}
+            <tr id="donation-row-{{ donation.id }}">
+              <td>{{ donation.donor.get_full_name }}</td>
+              <td>
+                <span class="blood-type-badge blood-{{ donation.donor.blood_type|slugify }}">{{ donation.donor.blood_type }}</span>
+              </td>
+              <td>{{ donation.blood_request.blood_type_needed }} — {{ donation.blood_request.hospital_branch_address }}</td>
+              <td>{{ donation.donated_at|date:'Y-m-d H:i' }}</td>
+              <td>
+                <button class="btn btn-success btn-sm btn-confirm" onclick="confirmDonation({{ donation.id }})">✅ تأكيد التبرع</button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="text-muted mb-5">لا يوجد متبرعون في الطريق حالياً.</p>
+  {% endif %}
+
+  <h2 class="section-title">📋 طلبات الدم</h2>
+  {% if blood_requests %}
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>فصيلة الدم</th>
+            <th>الأكياس</th>
+            <th>العنوان</th>
+            <th>الحالة</th>
+            <th>التاريخ</th>
+            <th>إجراء</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for req in blood_requests %}
+            <tr id="request-row-{{ req.id }}">
+              <td>
+                <span class="blood-type-badge blood-{{ req.blood_type_needed|slugify }}">{{ req.blood_type_needed }}</span>
+              </td>
+              <td>{{ req.bags_received }} / {{ req.bags_required }}</td>
+              <td>{{ req.hospital_branch_address }}</td>
+              <td>
+                {% if req.status == 'active' %}
+                  <span class="badge bg-danger">عاجل</span>
+                {% elif req.status == 'fulfilled' %}
+                  <span class="badge bg-success">مكتمل</span>
+                {% else %}
+                  <span class="badge bg-secondary">مغلق</span>
+                {% endif %}
+              </td>
+              <td>{{ req.created_at|date:'Y-m-d' }}</td>
+              <td>
+                <button class="btn-delete-custom" onclick="confirmDeleteRequest({{ req.id }})"><span class="delete-icon">✖️</span> حذف</button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="text-muted">
+      لم تنشئ أي طلبات بعد. <a href="{% url 'create_blood_request' %}">أنشئ طلباً الآن</a>
+    </p>
+  {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    async function confirmDonation(recordId) {
+      const btn = document.querySelector(`#donation-row-${recordId} .btn-confirm`)
+      btn.disabled = true
+      btn.textContent = 'جاري التأكيد...'
+    
+      try {
+        const response = await fetch(`/hospital/confirm/${recordId}/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+          }
+        })
+        const data = await response.json()
+        if (data.success) {
+          btn.textContent = '✅ تم التأكيد'
+          btn.classList.remove('btn-success')
+          btn.classList.add('btn-secondary')
+          showToast(data.message, 'success')
+          setTimeout(() => location.reload(), 1500)
+        } else {
+          btn.disabled = false
+          btn.textContent = '✅ تأكيد التبرع'
+          showToast(data.error || 'حدث خطأ', 'error')
+        }
+      } catch (err) {
+        btn.disabled = false
+        btn.textContent = '✅ تأكيد التبرع'
+        showToast('حدث خطأ في الاتصال', 'error')
+      }
+    }
+
+    async function confirmDeleteRequest(requestId) {
+      const result = await Swal.fire({
+        title: 'هل أنت متأكد من الحذف؟',
+        text: 'لن تتمكن من استعادة هذا الطلب وسيتم إلغاء أي التزامات متعلقة به!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'نعم، احذفه!',
+        cancelButtonText: 'إلغاء',
+        background: '#fff',
+        color: '#2c3e50',
+        iconColor: '#e74c3c'
+      });
+
+      if (!result.isConfirmed) return;
+
+      Swal.fire({
+        title: 'جاري الحذف...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      try {
+        const response = await fetch(`/hospital/requests/${requestId}/delete/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+          }
+        });
+        const data = await response.json();
+        if (data.success) {
+          await Swal.fire({
+            title: 'تم الحذف!',
+            text: data.message,
+            icon: 'success',
+            confirmButtonColor: '#27ae60',
+            confirmButtonText: 'حسناً'
+          });
+          const row = document.getElementById(`request-row-${requestId}`);
+          if (row) row.remove();
+          location.reload();
+        } else {
+          Swal.fire({
+            title: 'خطأ!',
+            text: data.error || 'حدث خطأ أثناء الحذف.',
+            icon: 'error',
+            confirmButtonColor: '#c0392b',
+            confirmButtonText: 'حسناً'
+          });
+        }
+      } catch (err) {
+        Swal.fire({
+          title: 'خطأ!',
+          text: 'حدث خطأ في الاتصال بالسيرفر.',
+          icon: 'error',
+          confirmButtonColor: '#c0392b',
+          confirmButtonText: 'حسناً'
+        });
+      }
+    }
+  </script>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+  الملف الشخصي
+{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-7">
+      <div class="auth-card">
+        <h2 class="text-center mb-2">تعديل الملف الشخصي</h2>
+        <p class="text-muted text-center mb-4">تحديث البيانات الخاصة بحسابك على المنصة</p>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {{ form|crispy }}
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary flex-grow-1">حفظ التغييرات</button>
+            {% if user.role == 'donor' %}
+              <a href="{% url 'donor_dashboard' %}" class="btn btn-outline-secondary">إلغاء</a>
+            {% elif user.role == 'hospital' %}
+              <a href="{% url 'hospital_dashboard' %}" class="btn btn-outline-secondary">إلغاء</a>
+            {% else %}
+              <a href="/" class="btn btn-outline-secondary">إلغاء</a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
