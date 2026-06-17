@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}تحقق من بريدك الإلكتروني{% endblock %}
+{% block title %}
+  تحقق من بريدك الإلكتروني
+{% endblock %}
 
 {% block content %}
   <div class="row justify-content-center">
@@ -21,13 +23,9 @@
         </p>
         <div class="verification-tips">
           <p class="tip-item">
-            <span class="tip-icon">📬</span>
             تحقق من مجلد <strong>البريد العشوائي (Spam)</strong> إذا لم تجد الرسالة.
           </p>
-          <p class="tip-item">
-            <span class="tip-icon">⏱️</span>
-            قد تستغرق الرسالة دقيقة أو دقيقتين للوصول.
-          </p>
+          <p class="tip-item">قد تستغرق الرسالة دقيقة أو دقيقتين للوصول.</p>
         </div>
         <hr />
         <a href="{% url 'login' %}" class="btn btn-primary mt-2">العودة لتسجيل الدخول</a>

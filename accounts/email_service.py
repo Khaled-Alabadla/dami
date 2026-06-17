@@ -1,6 +1,5 @@
 import logging
 
-import requests
 from django.conf import settings
 from django.core import signing
 from django.core.mail import send_mail
@@ -43,7 +42,7 @@ def send_verification_email(user, request=None) -> bool:
 
     Builds an absolute URL for the verify_email view using *request* when
     available, otherwise falls back to settings.SITE_URL. Returns True on
-    success or False if the API call fails.
+    success or False on failure.
     """
     token = generate_verification_token(user.pk)
 
@@ -84,52 +83,30 @@ def send_verification_email(user, request=None) -> bool:
 
 
 def send_email(to: str, subject: str, html_body: str, text_body: str = None) -> bool:
+    """
+    Dispatch an email through Django's configured EMAIL_BACKEND.
+
+    In development (no Gmail credentials in .env), the backend is
+    console.EmailBackend and the message is printed to the terminal.
+    In production (GMAIL_USER + GMAIL_APP_PASSWORD set), the backend is
+    smtp.EmailBackend and the message is delivered via Gmail.
+
+    Returns True on success, False on any exception.
+    """
     text_body = text_body or _strip_html(html_body)
-
-    api_key = getattr(settings, 'EMAIL_API_KEY', '')
-    if api_key:
-        return _send_via_resend(to, subject, html_body, text_body)
-
-    if settings.DEBUG:
-        print('\n' + '=' * 50)
-        print('[Email — console fallback]')
-        print(f'To      : {to}')
-        print(f'Subject : {subject}')
-        print('-' * 50)
-        print(text_body)
-        print('=' * 50 + '\n')
+    try:
+        send_mail(
+            subject=subject,
+            message=text_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[to],
+            html_message=html_body,
+            fail_silently=False,
+        )
         return True
-
-    return bool(send_mail(
-        subject=subject,
-        message=text_body,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[to],
-        html_message=html_body,
-        fail_silently=False,
-    ))
-
-
-def _send_via_resend(to: str, subject: str, html_body: str, text_body: str) -> bool:
-    """POST an email to the Resend API and return True on HTTP 2xx."""
-    response = requests.post(
-        settings.EMAIL_API_URL,
-        headers={
-            'Authorization': f'Bearer {settings.EMAIL_API_KEY}',
-            'Content-Type': 'application/json',
-        },
-        json={
-            'from': settings.DEFAULT_FROM_EMAIL,
-            'to': [to],
-            'subject': subject,
-            'html': html_body,
-            'text': text_body,
-        },
-        timeout=15,
-    )
-    if not response.ok:
-        logger.error('Resend API error %s: %s', response.status_code, response.text)
-    return response.ok
+    except Exception:
+        logger.exception('Failed to send email to %s', to)
+        return False
 
 
 def _strip_html(html: str) -> str:

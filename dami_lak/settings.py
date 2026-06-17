@@ -106,10 +106,25 @@ SESSION_COOKIE_HTTPONLY = True
 # ───── Site ─────
 SITE_URL = os.getenv('SITE_URL', 'http://127.0.0.1:8000')
 
-# ───── Resend Email API ─────
-# Set RESEND_API_KEY in .env to send real emails.
-# When the key is empty and DEBUG=True, emails are printed to the console.
-EMAIL_API_KEY = os.getenv('RESEND_API_KEY', '')
-EMAIL_API_URL = 'https://api.resend.com/emails'
-DEFAULT_FROM_EMAIL = os.getenv('EMAIL_FROM', 'Onboarding <onboarding@resend.dev>')
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# ───── Gmail SMTP ─────
+# Fill GMAIL_USER and GMAIL_APP_PASSWORD in .env to send real emails.
+# Leave both empty to fall back to the console backend (development).
+#
+# How to get an App Password:
+#   1. Enable 2-Step Verification on your Google account.
+#   2. Go to Google Account → Security → App Passwords.
+#   3. Create a password for "Mail" — use the 16-character code here.
+_gmail_user = os.getenv('GMAIL_USER', '')
+_gmail_password = os.getenv('GMAIL_APP_PASSWORD', '')
+
+if _gmail_user and _gmail_password:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = _gmail_user
+    EMAIL_HOST_PASSWORD = _gmail_password
+    DEFAULT_FROM_EMAIL = f'دمي <{_gmail_user}>'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    DEFAULT_FROM_EMAIL = 'دمي <noreply@dami.ps>'
