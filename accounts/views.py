@@ -2,20 +2,14 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
-from django.http import JsonResponse
+from django.core import signing
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
+from .email_service import send_verification_email, verify_verification_token
 from .forms import DonorRegistrationForm, UserProfileForm, EmailAuthenticationForm
 from .models import User
-from .otp import (
-    generate_otp,
-    send_otp_sms,
-    store_otp_in_session,
-    verify_otp_from_session,
-    can_resend_otp,
-)
 
 
 class CustomLoginView(LoginView):
@@ -38,96 +32,52 @@ def register_donor(request):
     if request.method == 'POST':
         form = DonorRegistrationForm(request.POST)
         if form.is_valid():
-            # حفظ بيانات التسجيل مؤقتاً في الـ Session
-            request.session['pending_registration'] = {
-                'email': form.cleaned_data['email'],
-                'first_name': form.cleaned_data['first_name'],
-                'last_name': form.cleaned_data['last_name'],
-                'phone_number': form.cleaned_data['phone_number'],
-                'city_id': form.cleaned_data['city'].id,
-                'blood_type': form.cleaned_data['blood_type'],
-                'password': form.cleaned_data['password'],
-            }
-            # توليد وإرسال OTP
-            phone = form.cleaned_data['phone_number']
-            otp_code = generate_otp()
-            store_otp_in_session(request, phone, otp_code)
-            send_otp_sms(phone, otp_code)
-            return redirect('verify_otp')
+            user = User.objects.create_user(
+                email=form.cleaned_data['email'],
+                password=form.cleaned_data['password'],
+                first_name=form.cleaned_data['first_name'],
+                last_name=form.cleaned_data['last_name'],
+                phone_number=form.cleaned_data['phone_number'],
+                city=form.cleaned_data['city'],
+                blood_type=form.cleaned_data['blood_type'],
+                role='donor',
+                is_active=False,
+            )
+            send_verification_email(user, request)
+            return redirect('verification_sent')
     else:
         form = DonorRegistrationForm()
     return render(request, 'accounts/register_donor.html', {'form': form})
 
 
-def verify_otp(request):
-    """صفحة إدخال رمز التحقق من الجوال."""
-    # التحقق من وجود بيانات تسجيل معلّقة
-    pending = request.session.get('pending_registration')
-    otp_data = request.session.get('otp_data')
-    if not pending or not otp_data:
-        messages.error(request, 'انتهت صلاحية الجلسة. يرجى إعادة التسجيل.')
+def verification_sent(request):
+    return render(request, 'accounts/verification_sent.html')
+
+
+def verify_email(request, token):
+    try:
+        user_pk = verify_verification_token(token)
+    except signing.SignatureExpired:
+        messages.error(request, 'انتهت صلاحية رابط التفعيل (24 ساعة). يرجى التسجيل مجدداً.')
+        return redirect('register_donor')
+    except (signing.BadSignature, ValueError):
+        messages.error(request, 'رابط التفعيل غير صالح.')
         return redirect('register_donor')
 
-    # إخفاء رقم الجوال جزئياً (مثل: ****1234)
-    phone = otp_data.get('phone', '')
-    masked_phone = '*' * max(0, len(phone) - 4) + phone[-4:] if len(phone) >= 4 else phone
+    try:
+        user = User.objects.get(pk=user_pk)
+    except User.DoesNotExist:
+        messages.error(request, 'رابط التفعيل غير صالح.')
+        return redirect('register_donor')
 
-    error_message = None
+    if user.is_active:
+        messages.info(request, 'تم تفعيل بريدك الإلكتروني مسبقاً. يمكنك تسجيل الدخول.')
+        return redirect('login')
 
-    if request.method == 'POST':
-        submitted_code = request.POST.get('otp_code', '')
-        success, error_message = verify_otp_from_session(request, submitted_code)
-
-        if success:
-            # إنشاء المستخدم
-            user = User.objects.create_user(
-                email=pending['email'],
-                password=pending['password'],
-                first_name=pending['first_name'],
-                last_name=pending['last_name'],
-                phone_number=pending['phone_number'],
-                city_id=pending['city_id'],
-                blood_type=pending['blood_type'],
-                role='donor',
-            )
-            # تنظيف الـ Session
-            request.session.pop('pending_registration', None)
-            request.session.pop('otp_data', None)
-            # تسجيل الدخول
-            login(request, user)
-            messages.success(request, 'تم التحقق بنجاح! مرحباً بك في منصة دمي 🩸')
-            return redirect('donor_dashboard')
-
-    return render(request, 'accounts/verify_otp.html', {
-        'masked_phone': masked_phone,
-        'error_message': error_message,
-    })
-
-
-@require_POST
-def resend_otp(request):
-    """إعادة إرسال رمز التحقق مع حماية cooldown."""
-    pending = request.session.get('pending_registration')
-    if not pending:
-        return JsonResponse({'success': False, 'message': 'انتهت صلاحية الجلسة.'}, status=400)
-
-    allowed, seconds_left = can_resend_otp(request)
-    if not allowed:
-        return JsonResponse({
-            'success': False,
-            'message': f'يرجى الانتظار {seconds_left} ثانية قبل إعادة الإرسال.',
-            'cooldown': seconds_left,
-        }, status=429)
-
-    phone = pending['phone_number']
-    otp_code = generate_otp()
-    store_otp_in_session(request, phone, otp_code)
-    sent = send_otp_sms(phone, otp_code)
-
-    if sent:
-        return JsonResponse({'success': True, 'message': 'تم إرسال رمز جديد بنجاح.'})
-    else:
-        return JsonResponse({'success': False, 'message': 'فشل إرسال الرسالة. حاول لاحقاً.'}, status=500)
+    user.is_active = True
+    user.save(update_fields=['is_active'])
+    messages.success(request, 'تم تأكيد بريدك الإلكتروني بنجاح! مرحباً بك في منصة دمي 🩸')
+    return redirect('login')
 
 
 @require_POST

@@ -2,15 +2,20 @@
 Django settings for dami_lak project.
 """
 
+import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
-SECRET_KEY = 'django-insecure-o&ihbsh&*(^-+dp^svkstxzuma1&xy8182a&gyj9cf5q6=7un%'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-o&ihbsh&*(^-+dp^svkstxzuma1&xy8182a&gyj9cf5q6=7un%')
 
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+_allowed = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost')
+ALLOWED_HOSTS = [h.strip() for h in _allowed.split(',') if h.strip()]
 
 AUTH_USER_MODEL = 'accounts.User'
 
@@ -98,11 +103,13 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 CSRF_COOKIE_SAMESITE = 'Strict'
 SESSION_COOKIE_HTTPONLY = True
 
-# ───── SMS Backend ─────
-# يطبع الرمز في الطرفية (للتطوير)
-SMS_CONSOLE_MODE = True
+# ───── Site ─────
+SITE_URL = os.getenv('SITE_URL', 'http://127.0.0.1:8000')
 
-# ───── OTP Settings ─────
-OTP_LENGTH = 6
-OTP_EXPIRY_MINUTES = 5
-OTP_RESEND_COOLDOWN_SECONDS = 60
+# ───── Resend Email API ─────
+# Set RESEND_API_KEY in .env to send real emails.
+# When the key is empty and DEBUG=True, emails are printed to the console.
+EMAIL_API_KEY = os.getenv('RESEND_API_KEY', '')
+EMAIL_API_URL = 'https://api.resend.com/emails'
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_FROM', 'Onboarding <onboarding@resend.dev>')
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

@@ -19,11 +19,8 @@ def stash_previous_status(sender, instance, **kwargs):
 @receiver(post_save, sender=DonationRecord)
 def handle_donation_completed(sender, instance, **kwargs):
     """
-    يُطلق تلقائياً عند تغيير حالة التبرع إلى 'completed'.
-    يقوم بـ:
-    1. تحديث ملف المتبرع الصحي (last_donation_date + is_available + total_donations)
-    2. رفع عداد bags_received في الطلب
-    3. إغلاق الطلب تلقائياً إذا اكتملت الكمية المطلوبة
+    يُطلق فقط عند تأكيد المستشفى (status = completed).
+    الالتزام بـ 'going' لا يُحدّث الأهلية ولا العداد.
     """
     if instance.status != 'completed':
         return

@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-  لوحة المتبرع
-{% endblock %}
+{% block title %}لوحة المتبرع{% endblock %}
 
 {% block content %}
   <div class="dashboard-header">
@@ -13,58 +11,62 @@
     </p>
   </div>
 
+  {% if has_going_commitment %}
+    <div class="going-commitment-alert">
+      <span class="going-icon">🚗</span>
+      <div>
+        <strong>لديك التزام قائم</strong>
+        <p>أنت في طريقك للتبرع. لا يمكنك الالتزام بحالة أخرى حتى يتم تأكيد تبرعك من المستشفى.</p>
+      </div>
+    </div>
+  {% endif %}
+
   <div class="row mb-4">
     <div class="col-md-4">
       <div class="stat-card">
-        <h4>إجمالي التبرعات</h4>
-        <span class="stat-value">{{ donor_profile.total_donations }}</span>
+        <div class="stat-icon stat-icon-donations">🩸</div>
+        <div>
+          <h4>إجمالي التبرعات</h4>
+          <span class="stat-value">{{ donor_profile.total_donations }}</span>
+        </div>
       </div>
     </div>
     <div class="col-md-4">
-      <div class="stat-card {% if donor_profile.is_available %}
-          
-          
-          
-          
-          
-          stat-success
-
-
-
-
-
-        {% else %}
-          
-          
-          
-          
-          
-          stat-warning
-
-
-
-
-
-        {% endif %}">
-        <h4>حالة الأهلية</h4>
-        {% if donor_profile.is_available %}
-          <span class="stat-value">✅ مؤهل للتبرع</span>
-        {% else %}
-          <span class="stat-value">⏳ {{ days_remaining }} يوم متبقٍ</span>
-        {% endif %}
+      <div class="stat-card {% if donor_profile.is_available %}stat-success{% else %}stat-warning{% endif %}">
+        <div class="stat-icon {% if donor_profile.is_available %}stat-icon-ok{% else %}stat-icon-wait{% endif %}">
+          {% if donor_profile.is_available %}✅{% else %}⏳{% endif %}
+        </div>
+        <div>
+          <h4>حالة الأهلية</h4>
+          {% if donor_profile.is_available %}
+            <span class="stat-value">مؤهل للتبرع</span>
+          {% else %}
+            <span class="stat-value">{{ days_remaining }} يوم متبقٍ</span>
+          {% endif %}
+        </div>
       </div>
     </div>
     <div class="col-md-4">
       <div class="stat-card stat-urgent">
-        <h4>حالات عاجلة</h4>
-        <span class="stat-value">{{ matching_requests|length }}</span>
+        <div class="stat-icon stat-icon-urgent">🚨</div>
+        <div>
+          <h4>حالات عاجلة</h4>
+          <span class="stat-value">{{ matching_requests|length }}</span>
+        </div>
       </div>
     </div>
   </div>
 
-  <h2 class="section-title" style="display: flex; align-items: center;"><img style="width: 30px" src="{% static 'images/blood.webp' %}" alt="" /> حالات عاجلة تطابق فصيلتك ومدينتك</h2>
+  <h2 class="section-title" style="display: flex; align-items: center; gap: 0.5rem;">
+    <img style="width: 28px" src="{% static 'images/blood.webp' %}" alt="" /> حالات عاجلة تطابق فصيلتك ومدينتك
+  </h2>
 
-  {% if matching_requests %}
+  {% if not donor_profile.is_available %}
+    <div class="cooldown-notice">
+      <span>⏳</span>
+      <p>أنت في فترة راحة صحية. يمكنك التبرع مجدداً بعد <strong>{{ days_remaining }} يوماً</strong>. شكراً على تبرعاتك السابقة!</p>
+    </div>
+  {% elif matching_requests %}
     <div class="requests-grid">
       {% for req in matching_requests %}
         {% include 'blood_requests/request_card.html' with request=req %}
@@ -74,5 +76,53 @@
     <div class="empty-state">
       <p>لا توجد حالات عاجلة حالياً تطابق فصيلة دمك ومدينتك. شكراً لاستعدادك الدائم!</p>
     </div>
+  {% endif %}
+
+  <h2 class="section-title">📋 سجل التبرعات</h2>
+  {% if donation_records %}
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>المستشفى</th>
+            <th>فصيلة الدم</th>
+            <th>العنوان</th>
+            <th>الحالة</th>
+            <th>وقت الالتزام</th>
+            <th>وقت التأكيد</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for donation in donation_records %}
+            <tr>
+              <td>{{ donation.blood_request.hospital.get_full_name }}</td>
+              <td>
+                <span class="blood-type-badge blood-{{ donation.blood_request.blood_type_needed|slugify }}">{{ donation.blood_request.blood_type_needed }}</span>
+              </td>
+              <td>{{ donation.blood_request.hospital_branch_address }}</td>
+              <td>
+                {% if donation.status == 'going' %}
+                  <span class="badge bg-warning text-dark">في الطريق 🚗</span>
+                {% elif donation.status == 'completed' %}
+                  <span class="badge bg-success">مكتمل ✅</span>
+                {% else %}
+                  <span class="badge bg-secondary">لم يتم</span>
+                {% endif %}
+              </td>
+              <td>{{ donation.donated_at|date:'Y-m-d H:i' }}</td>
+              <td>
+                {% if donation.confirmed_at %}
+                  {{ donation.confirmed_at|date:'Y-m-d H:i' }}
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="text-muted">لم تقم بأي عمليات تبرع بعد.</p>
   {% endif %}
 {% endblock %}

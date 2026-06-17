@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
+from django.core.exceptions import ValidationError
 
 from .models import City, User
 
@@ -9,6 +10,13 @@ class EmailAuthenticationForm(AuthenticationForm):
         label='البريد الإلكتروني',
         widget=forms.EmailInput(attrs={'autofocus': True})
     )
+
+    def confirm_login_allowed(self, user):
+        if not user.is_active:
+            raise ValidationError(
+                'لم يتم تفعيل هذا الحساب بعد. يرجى التحقق من بريدك الإلكتروني والضغط على رابط التفعيل.',
+                code='inactive',
+            )
 
 
 class DonorRegistrationForm(forms.ModelForm):

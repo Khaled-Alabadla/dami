@@ -13,30 +13,54 @@
     <a href="{% url 'create_blood_request' %}" class="btn btn-primary">+ طلب دم جديد</a>
   </div>
 
-  <h2 class="section-title">⏳ متبرعون في الطريق</h2>
-  {% if pending_donations %}
+  <h2 class="section-title">🩸 سجلات التبرع</h2>
+  {% if donation_records %}
     <div class="table-responsive mb-5">
       <table class="table table-hover">
         <thead>
           <tr>
             <th>المتبرع</th>
             <th>فصيلة الدم</th>
+            <th>اسم المريض</th>
             <th>الطلب</th>
+            <th>الحالة</th>
             <th>وقت التسجيل</th>
+            <th>وقت التأكيد</th>
             <th>إجراء</th>
           </tr>
         </thead>
         <tbody>
-          {% for donation in pending_donations %}
+          {% for donation in donation_records %}
             <tr id="donation-row-{{ donation.id }}">
               <td>{{ donation.donor.get_full_name }}</td>
               <td>
                 <span class="blood-type-badge blood-{{ donation.donor.blood_type|slugify }}">{{ donation.donor.blood_type }}</span>
               </td>
+              <td>{{ donation.blood_request.patient_name_hidden }}</td>
               <td>{{ donation.blood_request.blood_type_needed }} — {{ donation.blood_request.hospital_branch_address }}</td>
+              <td>
+                {% if donation.status == 'going' %}
+                  <span class="badge bg-warning text-dark">في الطريق</span>
+                {% elif donation.status == 'completed' %}
+                  <span class="badge bg-success">مكتمل</span>
+                {% else %}
+                  <span class="badge bg-secondary">لم يتم</span>
+                {% endif %}
+              </td>
               <td>{{ donation.donated_at|date:'Y-m-d H:i' }}</td>
               <td>
-                <button class="btn btn-success btn-sm btn-confirm" onclick="confirmDonation({{ donation.id }})">✅ تأكيد التبرع</button>
+                {% if donation.confirmed_at %}
+                  {{ donation.confirmed_at|date:'Y-m-d H:i' }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td>
+                {% if donation.status == 'going' %}
+                  <button class="btn btn-success btn-sm btn-confirm" onclick="confirmDonation({{ donation.id }})">✅ تأكيد التبرع</button>
+                {% else %}
+                  —
+                {% endif %}
               </td>
             </tr>
           {% endfor %}
@@ -44,7 +68,7 @@
       </table>
     </div>
   {% else %}
-    <p class="text-muted mb-5">لا يوجد متبرعون في الطريق حالياً.</p>
+    <p class="text-muted mb-5">لا توجد سجلات تبرع حتى الآن.</p>
   {% endif %}
 
   <h2 class="section-title">📋 طلبات الدم</h2>
@@ -53,6 +77,7 @@
       <table class="table">
         <thead>
           <tr>
+            <th>اسم المريض</th>
             <th>فصيلة الدم</th>
             <th>الأكياس</th>
             <th>العنوان</th>
@@ -64,6 +89,7 @@
         <tbody>
           {% for req in blood_requests %}
             <tr id="request-row-{{ req.id }}">
+              <td>{{ req.patient_name_hidden }}</td>
               <td>
                 <span class="blood-type-badge blood-{{ req.blood_type_needed|slugify }}">{{ req.blood_type_needed }}</span>
               </td>

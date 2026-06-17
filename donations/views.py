@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
 
 from accounts.decorators import donor_required
+from blood_requests.compatibility import compatible_recipient_types
 from blood_requests.models import BloodRequest
 from .models import DonationRecord
 
@@ -32,13 +33,26 @@ def commit_to_donate(request, request_id):
             'days_remaining': profile.days_until_available(),
         }, status=403)
 
+    compatible = compatible_recipient_types(user.blood_type)
     blood_request = get_object_or_404(
         BloodRequest,
         id=request_id,
         status='active',
-        blood_type_needed=user.blood_type,
+        blood_type_needed__in=compatible,
         hospital__city=user.city,
     )
+
+    existing_going = DonationRecord.objects.filter(
+        donor=user,
+        status='going',
+    ).select_related('blood_request').first()
+
+    if existing_going:
+        return JsonResponse({
+            'success': False,
+            'already_committed_elsewhere': True,
+            'error': 'لديك التزام قائم بحالة أخرى. يُرجى إتمام التزامك الحالي أولاً.',
+        }, status=400)
 
     record, created = DonationRecord.objects.get_or_create(
         blood_request=blood_request,

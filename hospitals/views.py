@@ -17,14 +17,13 @@ def hospital_dashboard(request):
         hospital=request.user,
     ).order_by('-created_at')
 
-    pending_donations = DonationRecord.objects.filter(
+    donation_records = DonationRecord.objects.filter(
         blood_request__hospital=request.user,
-        status='going',
     ).select_related('donor', 'blood_request').order_by('-donated_at')
 
     context = {
         'blood_requests': blood_requests,
-        'pending_donations': pending_donations,
+        'donation_records': donation_records,
     }
     return render(request, 'hospitals/dashboard.html', context)
 

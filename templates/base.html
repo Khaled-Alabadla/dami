@@ -41,17 +41,17 @@
             {% if user.is_authenticated %}
               {% if user.role == 'donor' %}
                 <li class="nav-item">
-                  <a class="nav-link" href="{% url 'donor_dashboard' %}">لوحة المتبرع</a>
+                  <a class="nav-link{% if request.resolver_match.url_name == 'donor_dashboard' %} active{% endif %}" href="{% url 'donor_dashboard' %}">لوحة المتبرع</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="{% url 'request_list' %}">الطلبات</a>
+                  <a class="nav-link{% if request.resolver_match.url_name == 'request_list' %} active{% endif %}" href="{% url 'request_list' %}">الطلبات</a>
                 </li>
               {% elif user.role == 'hospital' %}
                 <li class="nav-item">
-                  <a class="nav-link" href="{% url 'hospital_dashboard' %}">لوحة المستشفى</a>
+                  <a class="nav-link{% if request.resolver_match.url_name == 'hospital_dashboard' %} active{% endif %}" href="{% url 'hospital_dashboard' %}">لوحة المستشفى</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="{% url 'create_blood_request' %}">طلب دم جديد</a>
+                  <a class="nav-link{% if request.resolver_match.url_name == 'create_blood_request' %} active{% endif %}" href="{% url 'create_blood_request' %}">طلب دم جديد</a>
                 </li>
               {% endif %}
             {% endif %}
@@ -62,7 +62,7 @@
                 <span class="nav-link user-greeting">مرحباً، {{ user.get_full_name|default:user.email }}</span>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="{% url 'edit_profile' %}">الملف الشخصي</a>
+                <a class="nav-link{% if request.resolver_match.url_name == 'edit_profile' %} active{% endif %}" href="{% url 'edit_profile' %}">الملف الشخصي</a>
               </li>
               <li class="nav-item d-flex align-items-center ms-2">
                 <form method="post" action="{% url 'logout' %}" class="d-inline">
@@ -104,9 +104,7 @@
 
     <footer class="site-footer">
       <div class="container text-center">
-        <p style="    display: flex;
-    justify-content: center;
-    align-items: center;">
+        <p style="display: flex; justify-content: center; align-items: center; gap: 0.4rem;">
           دمي — شبكة رقمية لتنظيم التبرع بالدم في قطاع غزة <img width="20px" src="{% static 'images/blood.webp' %}" alt="" />
         </p>
       </div>
