@@ -8,11 +8,13 @@ from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
 from .email_service import send_verification_email, verify_verification_token
-from .forms import DonorRegistrationForm, UserProfileForm, EmailAuthenticationForm
+from .forms import DonorRegistrationForm, EmailAuthenticationForm, UserProfileForm
 from .models import User
 
 
 class CustomLoginView(LoginView):
+    """Email-based login; redirects each role to its own dashboard."""
+
     template_name = 'accounts/login.html'
     authentication_form = EmailAuthenticationForm
     redirect_authenticated_user = True
@@ -27,8 +29,16 @@ class CustomLoginView(LoginView):
 
 
 def register_donor(request):
+    """
+    Register a new donor account.
+
+    Creates the user with is_active=False, sends a verification email,
+    then redirects to the 'check your inbox' page. The account becomes
+    active only after the user clicks the email link.
+    """
     if request.user.is_authenticated:
         return redirect('donor_dashboard')
+
     if request.method == 'POST':
         form = DonorRegistrationForm(request.POST)
         if form.is_valid():
@@ -47,14 +57,23 @@ def register_donor(request):
             return redirect('verification_sent')
     else:
         form = DonorRegistrationForm()
+
     return render(request, 'accounts/register_donor.html', {'form': form})
 
 
 def verification_sent(request):
+    """Static page telling the user to check their inbox."""
     return render(request, 'accounts/verification_sent.html')
 
 
 def verify_email(request, token):
+    """
+    Activate an account via a signed email-verification token.
+
+    Validates the token's signature and age (max 24 h). If valid, sets
+    is_active=True on the matching User and redirects to login.
+    Edge cases handled: expired token, tampered token, already-active account.
+    """
     try:
         user_pk = verify_verification_token(token)
     except signing.SignatureExpired:
@@ -82,12 +101,14 @@ def verify_email(request, token):
 
 @require_POST
 def logout_view(request):
+    """POST-only logout to prevent CSRF-based forced logouts."""
     logout(request)
     return redirect('login')
 
 
 @login_required
 def edit_profile(request):
+    """Allow any authenticated user to update their own profile fields."""
     if request.method == 'POST':
         form = UserProfileForm(request.POST, instance=request.user)
         if form.is_valid():
@@ -95,9 +116,10 @@ def edit_profile(request):
             messages.success(request, 'تم تحديث بيانات ملفك الشخصي بنجاح!')
             if request.user.role == 'donor':
                 return redirect('donor_dashboard')
-            elif request.user.role == 'hospital':
+            if request.user.role == 'hospital':
                 return redirect('hospital_dashboard')
             return redirect('edit_profile')
     else:
         form = UserProfileForm(instance=request.user)
+
     return render(request, 'accounts/profile.html', {'form': form})

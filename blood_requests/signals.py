@@ -10,6 +10,14 @@ from .models import BloodRequest
 
 @receiver(post_save, sender=BloodRequest)
 def notify_donors_on_new_request(sender, instance, created, **kwargs):
+    """
+    Email eligible donors when a new active BloodRequest is created.
+
+    Finds all donors whose blood type is compatible with the requested type
+    and who live in the same city. Skips donors inside their 90-day cooldown.
+    Runs synchronously on save; consider moving to a background task for
+    large donor databases.
+    """
     if not created or instance.status != 'active':
         return
 

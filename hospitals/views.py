@@ -1,8 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_POST
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from accounts.decorators import hospital_required
 from blood_requests.models import BloodRequest
@@ -13,6 +13,12 @@ from .forms import BloodRequestForm
 @login_required
 @hospital_required
 def hospital_dashboard(request):
+    """
+    Render the hospital's dashboard.
+
+    Shows all blood requests created by this hospital and the full list of
+    donation commitments across all of them, so staff can confirm arrivals.
+    """
     blood_requests = BloodRequest.objects.filter(
         hospital=request.user,
     ).order_by('-created_at')
@@ -21,26 +27,29 @@ def hospital_dashboard(request):
         blood_request__hospital=request.user,
     ).select_related('donor', 'blood_request').order_by('-donated_at')
 
-    context = {
+    return render(request, 'hospitals/dashboard.html', {
         'blood_requests': blood_requests,
         'donation_records': donation_records,
-    }
-    return render(request, 'hospitals/dashboard.html', context)
+    })
 
 
 @login_required
 @hospital_required
 def create_blood_request(request):
+    """Handle the form for creating a new BloodRequest for this hospital."""
     if request.method == 'POST':
         form = BloodRequestForm(request.POST)
         if form.is_valid():
             blood_request = form.save(commit=False)
             blood_request.hospital = request.user
-            blood_request.hospital_branch_address = request.user.city.name if request.user.city else 'غير محدد'
+            blood_request.hospital_branch_address = (
+                request.user.city.name if request.user.city else 'غير محدد'
+            )
             blood_request.save()
             return redirect('hospital_dashboard')
     else:
         form = BloodRequestForm()
+
     return render(request, 'hospitals/create_request.html', {'form': form})
 
 
@@ -49,8 +58,13 @@ def create_blood_request(request):
 @require_POST
 def confirm_donation(request, record_id):
     """
-    واجهة موظف المختبر — يضغط زر واحد لتأكيد استلام العينة.
-    يُطلق الـ Signal تلقائياً لتحديث كل الجداول.
+    AJAX endpoint for lab staff to confirm that a donor arrived and donated.
+
+    Sets the DonationRecord status to 'completed' and stamps confirmed_at.
+    The post_save signal on DonationRecord then updates the donor's profile
+    and the request's bags_received counter automatically.
+
+    Returns JSON with the updated bag counts for the frontend to display.
     """
     record = get_object_or_404(
         DonationRecord.objects.select_related('donor', 'blood_request'),
@@ -77,17 +91,13 @@ def confirm_donation(request, record_id):
 @require_POST
 def delete_blood_request(request, request_id):
     """
-    حذف طلب التبرع بالدم من قبل المستشفى الذي أنشأه.
+    AJAX endpoint for a hospital to delete one of its own BloodRequests.
+
+    Uses get_object_or_404 scoped to the requesting hospital to prevent
+    hospitals from deleting each other's requests.
     """
     blood_request = get_object_or_404(
-        BloodRequest,
-        id=request_id,
-        hospital=request.user
+        BloodRequest, id=request_id, hospital=request.user,
     )
     blood_request.delete()
-    return JsonResponse({
-        'success': True,
-        'message': 'تم حذف طلب التبرع بالدم بنجاح.'
-    })
-
-
+    return JsonResponse({'success': True, 'message': 'تم حذف طلب التبرع بالدم بنجاح.'})

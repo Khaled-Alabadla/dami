@@ -6,21 +6,27 @@ from .models import City, User
 
 
 class EmailAuthenticationForm(AuthenticationForm):
+    """Login form that accepts an email address instead of a username."""
+
     username = forms.EmailField(
         label='البريد الإلكتروني',
-        widget=forms.EmailInput(attrs={'autofocus': True})
+        widget=forms.EmailInput(attrs={'autofocus': True}),
     )
 
     def confirm_login_allowed(self, user):
+        """Raise a user-friendly error when the account is not yet verified."""
         if not user.is_active:
             raise ValidationError(
-                'لم يتم تفعيل هذا الحساب بعد. يرجى التحقق من بريدك الإلكتروني والضغط على رابط التفعيل.',
+                'لم يتم تفعيل هذا الحساب بعد. '
+                'يرجى التحقق من بريدك الإلكتروني والضغط على رابط التفعيل.',
                 code='inactive',
             )
 
 
 class DonorRegistrationForm(forms.ModelForm):
-    email = forms.EmailField(label='البريد الإلكتروني', required=True)
+    """Registration form for new blood donors."""
+
+    email = forms.EmailField(label='البريد الإلكتروني')
     first_name = forms.CharField(label='الاسم الأول', max_length=150)
     last_name = forms.CharField(label='اسم العائلة', max_length=150)
     phone_number = forms.CharField(label='رقم الهاتف', max_length=15)
@@ -29,38 +35,25 @@ class DonorRegistrationForm(forms.ModelForm):
         queryset=City.objects.all(),
         empty_label='— اختر المدينة —',
     )
-    blood_type = forms.ChoiceField(
-        label='فصيلة الدم',
-        choices=User.BLOOD_CHOICES,
-    )
-    password = forms.CharField(
-        label='كلمة المرور',
-        widget=forms.PasswordInput(),
-        required=True
-    )
-    password_confirm = forms.CharField(
-        label='تأكيد كلمة المرور',
-        widget=forms.PasswordInput(),
-        required=True
-    )
+    blood_type = forms.ChoiceField(label='فصيلة الدم', choices=User.BLOOD_CHOICES)
+    password = forms.CharField(label='كلمة المرور', widget=forms.PasswordInput())
+    password_confirm = forms.CharField(label='تأكيد كلمة المرور', widget=forms.PasswordInput())
 
     class Meta:
         model = User
-        fields = (
-            'email', 'first_name', 'last_name',
-            'phone_number', 'city', 'blood_type',
-        )
+        fields = ('email', 'first_name', 'last_name', 'phone_number', 'city', 'blood_type')
 
     def clean(self):
+        """Validate that both password fields match."""
         cleaned_data = super().clean()
-        password = cleaned_data.get("password")
-        password_confirm = cleaned_data.get("password_confirm")
-
+        password = cleaned_data.get('password')
+        password_confirm = cleaned_data.get('password_confirm')
         if password and password_confirm and password != password_confirm:
-            self.add_error('password_confirm', "كلمتا المرور غير متطابقتين.")
+            self.add_error('password_confirm', 'كلمتا المرور غير متطابقتين.')
         return cleaned_data
 
     def save(self, commit=True):
+        """Hash the password before saving."""
         user = super().save(commit=False)
         user.role = 'donor'
         user.blood_type = self.cleaned_data['blood_type']
@@ -71,14 +64,15 @@ class DonorRegistrationForm(forms.ModelForm):
 
 
 class UserProfileForm(forms.ModelForm):
-    first_name = forms.CharField(label='الاسم الأول / اسم الجهة', max_length=150, required=True)
+    """Profile edit form; hides blood_type for non-donor accounts."""
+
+    first_name = forms.CharField(label='الاسم الأول', max_length=150)
     last_name = forms.CharField(label='اسم العائلة', max_length=150, required=False)
-    phone_number = forms.CharField(label='رقم الهاتف', max_length=15, required=True)
+    phone_number = forms.CharField(label='رقم الهاتف', max_length=15)
     city = forms.ModelChoiceField(
         label='المدينة',
         queryset=City.objects.all(),
         empty_label='— اختر المدينة —',
-        required=True
     )
 
     class Meta:
@@ -91,6 +85,5 @@ class UserProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # If user is not a donor, blood_type is not needed
         if self.instance and self.instance.role != 'donor':
             self.fields.pop('blood_type', None)
