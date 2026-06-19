@@ -11,7 +11,7 @@
         {% if user.role == 'donor' and req.status == 'active' %}
           {% include 'blood_requests/request_card.html' with request=req %}
         {% elif user.role != 'donor' %}
-          <div class="request-card">
+          <div class="request-card blood-{{ req.blood_type_needed|slugify }}">
             <div class="rc-header">
               <span class="rc-badge blood-{{ req.blood_type_needed|slugify }}">{{ req.blood_type_needed }}</span>
               <div class="rc-title">

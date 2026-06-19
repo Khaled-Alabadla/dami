@@ -1,4 +1,4 @@
-<div class="request-card" data-request-id="{{ request.id }}">
+<div class="request-card blood-{{ request.blood_type_needed|slugify }}" data-request-id="{{ request.id }}">
   <div class="rc-header">
     <span class="rc-badge blood-{{ request.blood_type_needed|slugify }}">{{ request.blood_type_needed }}</span>
     <div class="rc-title">

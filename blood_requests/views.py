@@ -41,7 +41,7 @@ def request_list(request):
 
         context['completed_ids'] = set(DonationRecord.objects.filter(
             donor=user,
-            status='completed', 
+            status='completed',
         ).values_list('blood_request_id', flat=True))
 
         context['has_going_commitment'] = DonationRecord.objects.filter(

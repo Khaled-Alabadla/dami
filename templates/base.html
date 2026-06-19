@@ -34,11 +34,13 @@
       <div class="container">
         <a class="navbar-brand" href="/">
           <span class="logo-icon">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style="color:rgba(255,255,255,0.9);">
-              <path d="M12 2C12 2 5 10.5 5 15a7 7 0 0014 0C19 10.5 12 2 12 2z" />
+            <svg width="20" height="22" viewBox="0 0 20 22" fill="none" aria-hidden="true">
+              <path d="M10 1.4C10 1.4 3.2 8.9 3.2 13.3a6.8 6.8 0 1013.6 0C16.8 8.9 10 1.4 10 1.4z" fill="white" fill-opacity="0.96" />
+              <path d="M10 5.6c1.45 1.85 3.45 4.72 3.45 7.25a3.45 3.45 0 01-6.9 0C6.55 10.32 8.55 7.45 10 5.6z" fill="#00B8A9" fill-opacity="0.98" />
+              <circle cx="7.8" cy="12.1" r="1.05" fill="white" fill-opacity="0.55" />
             </svg>
           </span>
-          <span class="logo-text">دمي</span>
+          <span class="brand-wordmark">دمي</span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -46,17 +48,17 @@
             {% if user.is_authenticated %}
               {% if user.role == 'donor' %}
                 <li class="nav-item">
-                  <a class="nav-link{% if request.resolver_match.url_name == 'donor_dashboard' %} active{% endif %}" href="{% url 'donor_dashboard' %}"><i class="bi bi-speedometer2 me-1"></i>لوحة المتبرع</a>
+                  <a class="nav-link{% if request.resolver_match.url_name == 'donor_dashboard' %} active{% endif %}" href="{% url 'donor_dashboard' %}">لوحة المتبرع</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link{% if request.resolver_match.url_name == 'request_list' %} active{% endif %}" href="{% url 'request_list' %}"><i class="bi bi-list-ul me-1"></i>الطلبات</a>
+                  <a class="nav-link{% if request.resolver_match.url_name == 'request_list' %} active{% endif %}" href="{% url 'request_list' %}">الطلبات</a>
                 </li>
               {% elif user.role == 'hospital' %}
                 <li class="nav-item">
-                  <a class="nav-link{% if request.resolver_match.url_name == 'hospital_dashboard' %} active{% endif %}" href="{% url 'hospital_dashboard' %}"><i class="bi bi-hospital me-1"></i>لوحة المستشفى</a>
+                  <a class="nav-link{% if request.resolver_match.url_name == 'hospital_dashboard' %} active{% endif %}" href="{% url 'hospital_dashboard' %}">لوحة المستشفى</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link{% if request.resolver_match.url_name == 'create_blood_request' %} active{% endif %}" href="{% url 'create_blood_request' %}"><i class="bi bi-plus-circle me-1"></i>طلب دم جديد</a>
+                  <a class="nav-link{% if request.resolver_match.url_name == 'create_blood_request' %} active{% endif %}" href="{% url 'create_blood_request' %}">طلب دم جديد</a>
                 </li>
               {% endif %}
             {% endif %}
@@ -67,7 +69,7 @@
                 <span class="nav-link user-greeting">{{ user.get_full_name|default:user.email }}</span>
               </li>
               <li class="nav-item">
-                <a class="nav-link{% if request.resolver_match.url_name == 'edit_profile' %} active{% endif %}" href="{% url 'edit_profile' %}"><i class="bi bi-person me-1"></i>الملف الشخصي</a>
+                <a class="nav-link{% if request.resolver_match.url_name == 'edit_profile' %} active{% endif %}" href="{% url 'edit_profile' %}">الملف الشخصي</a>
               </li>
               <li class="nav-item d-flex align-items-center ms-1">
                 <form method="post" action="{% url 'logout' %}" class="d-inline">
@@ -89,9 +91,10 @@
     </nav>
 
     <main class="container py-4">
-      <div class="callout-box text-center">
-        <p class="mb-1 fw-bold" style="font-size:1rem;color:var(--text);">"وَمَنْ أَحْيَاهَا فَكَأَنَّمَا أَحْيَا النَّاسَ جَمِيعًا"</p>
-        <small style="color:var(--text-muted);">— سورة المائدة، الآية 32</small>
+      <div class="callout-box">
+        <span class="callout-kicker">رسالة المنصة</span>
+        <p class="callout-verse">وَمَنْ أَحْيَاهَا فَكَأَنَّمَا أَحْيَا النَّاسَ جَمِيعًا</p>
+        <span class="callout-ref">سورة المائدة، الآية 32</span>
       </div>
 
       {% if messages %}
@@ -110,7 +113,7 @@
     <footer class="site-footer">
       <div class="container text-center">
         <p>
-          منصة <strong style="color:var(--red);">دمي</strong> — شبكة التبرع بالدم في قطاع غزة
+          منصة <strong style="color:var(--primary);">دمي</strong> — شبكة التبرع بالدم في قطاع غزة
         </p>
       </div>
     </footer>

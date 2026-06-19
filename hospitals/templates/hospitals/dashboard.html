@@ -6,7 +6,7 @@
   <div class="dashboard-header d-flex justify-content-between align-items-center flex-wrap gap-2">
     <div>
       <h1>لوحة المستشفى</h1>
-      <p class="text-muted mb-0">{{ user.get_full_name }} · {{ user.city }}</p>
+      <p class="text-muted mb-0" style="font-size:0.9rem;">{{ user.get_full_name }} · {{ user.city }}</p>
     </div>
     <a href="{% url 'create_blood_request' %}" class="btn btn-primary">
       <i class="bi bi-plus-lg me-1"></i>طلب دم جديد
@@ -80,7 +80,7 @@
   {% if blood_requests %}
     <div class="requests-grid">
       {% for req in blood_requests %}
-        <div class="request-card" id="request-row-{{ req.id }}">
+        <div class="request-card blood-{{ req.blood_type_needed|slugify }}" id="request-row-{{ req.id }}">
           <div class="rc-header">
             <span class="rc-badge blood-{{ req.blood_type_needed|slugify }}">{{ req.blood_type_needed }}</span>
             <div class="rc-title">
