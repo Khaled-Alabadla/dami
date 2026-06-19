@@ -78,31 +78,14 @@
   <h2 class="section-title">طلبات الدم</h2>
 
   {% if blood_requests %}
-    <div class="table-responsive">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>اسم المريض</th>
-            <th>فصيلة الدم</th>
-            <th>الأكياس</th>
-            <th>العنوان</th>
-            <th>الحالة</th>
-            <th>التاريخ</th>
-            <th>إجراء</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for req in blood_requests %}
-            <tr id="request-row-{{ req.id }}">
-              <td>{{ req.patient_name_hidden }}</td>
-              <td>
-                <span class="blood-type-badge blood-{{ req.blood_type_needed|slugify }}">
-                  {{ req.blood_type_needed }}
-                </span>
-              </td>
-              <td>{{ req.bags_received }} / {{ req.bags_required }}</td>
-              <td>{{ req.hospital_branch_address }}</td>
-              <td>
+    <div class="requests-grid">
+      {% for req in blood_requests %}
+        <div class="request-card" id="request-row-{{ req.id }}">
+          <div class="rc-header">
+            <span class="rc-badge blood-{{ req.blood_type_needed|slugify }}">{{ req.blood_type_needed }}</span>
+            <div class="rc-title">
+              <h3>{{ req.patient_name_hidden }}</h3>
+              <span class="rc-meta">
                 {% if req.status == 'active' %}
                   <span class="badge bg-danger">نشط</span>
                 {% elif req.status == 'fulfilled' %}
@@ -110,17 +93,24 @@
                 {% else %}
                   <span class="badge bg-secondary">مغلق</span>
                 {% endif %}
-              </td>
-              <td>{{ req.created_at|date:'Y-m-d' }}</td>
-              <td>
-                <button class="btn-delete-custom" onclick="confirmDeleteRequest({{ req.id }})">
-                  <span class="delete-icon"><i class="bi bi-x-lg"></i></span> حذف
-                </button>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+                <span class="text-muted">· {{ req.created_at|date:'Y-m-d' }}</span>
+              </span>
+            </div>
+          </div>
+          <div class="rc-address">
+            <i class="bi bi-building"></i> {{ req.hospital_branch_address }}
+          </div>
+          <div class="rc-progress">
+            <div class="rc-fill" style="width: {{ req.fulfillment_percentage }}%"></div>
+          </div>
+          <div class="d-flex align-items-center justify-content-between">
+            <span class="rc-bags">{{ req.bags_received }} / {{ req.bags_required }} أكياس</span>
+            <button class="btn-delete-custom" onclick="confirmDeleteRequest({{ req.id }})">
+              <span class="delete-icon"><i class="bi bi-x-lg"></i></span> حذف
+            </button>
+          </div>
+        </div>
+      {% endfor %}
     </div>
   {% else %}
     <div class="empty-state">

@@ -11,18 +11,18 @@
         {% if user.role == 'donor' and req.status == 'active' %}
           {% include 'blood_requests/request_card.html' with request=req %}
         {% elif user.role != 'donor' %}
-          <div class="request-card blood-{{ req.blood_type_needed|slugify }}">
-            <div class="blood-type-badge blood-{{ req.blood_type_needed|slugify }}">{{ req.blood_type_needed }}</div>
-            <div class="request-info">
-              <h3>{{ req.hospital.get_full_name }}</h3>
-              <div class="text-muted mb-2">
-                <i class="bi bi-geo-alt"></i> {{ req.hospital.city }}
+          <div class="request-card">
+            <div class="rc-header">
+              <span class="rc-badge blood-{{ req.blood_type_needed|slugify }}">{{ req.blood_type_needed }}</span>
+              <div class="rc-title">
+                <h3>{{ req.hospital.get_full_name }}</h3>
+                <span class="rc-meta"><i class="bi bi-geo-alt"></i> {{ req.hospital.city }}</span>
               </div>
-              <div class="progress-bar-custom">
-                <div class="fill" style="width: {{ req.fulfillment_percentage }}%"></div>
-              </div>
-              <span class="bags-count">{{ req.bags_received }} / {{ req.bags_required }} أكياس — {{ req.get_status_display }}</span>
             </div>
+            <div class="rc-progress">
+              <div class="rc-fill" style="width: {{ req.fulfillment_percentage }}%"></div>
+            </div>
+            <span class="rc-bags">{{ req.bags_received }} / {{ req.bags_required }} أكياس · {{ req.get_status_display }}</span>
           </div>
         {% endif %}
       {% endfor %}

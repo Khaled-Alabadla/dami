@@ -41,7 +41,11 @@ class DonorRegistrationForm(forms.ModelForm):
         required=False,
         widget=forms.TextInput(),
     )
-    blood_type = forms.ChoiceField(label='فصيلة الدم', choices=User.BLOOD_CHOICES)
+    blood_type = forms.ChoiceField(
+        label='فصيلة الدم',
+        choices=[('', '— اختر فصيلة الدم —')] + list(User.BLOOD_CHOICES),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
     password = forms.CharField(label='كلمة المرور', widget=forms.PasswordInput())
     password_confirm = forms.CharField(label='تأكيد كلمة المرور', widget=forms.PasswordInput())
 

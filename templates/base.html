@@ -4,21 +4,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}دمي{% endblock %} — منصة التبرع بالدم</title>
+    <title>
+      {% block title %}
+        دمي
+      {% endblock %}— منصة التبرع بالدم
+    </title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'css/main.css' %}" />
-    {% block extra_css %}{% endblock %}
+    {% block extra_css %}
+    {% endblock %}
   </head>
   <body>
-
     {% if user.is_authenticated and user.role == 'donor' and urgent_count > 0 %}
       <div class="alert-urgent-bar">
         <i class="bi bi-exclamation-circle-fill"></i>
-        يوجد {{ urgent_count }} {% if urgent_count == 1 %}حالة عاجلة{% else %}حالات عاجلة{% endif %} تطابق فصيلتك الآن!
+        يوجد {{ urgent_count }} {% if urgent_count == 1 %}
+          حالة عاجلة
+        {% else %}
+          حالات عاجلة
+        {% endif %}تطابق فصيلتك الآن!
       </div>
     {% endif %}
 
@@ -27,38 +35,28 @@
         <a class="navbar-brand" href="/">
           <span class="logo-icon">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style="color:rgba(255,255,255,0.9);">
-              <path d="M12 2C12 2 5 10.5 5 15a7 7 0 0014 0C19 10.5 12 2 12 2z"/>
+              <path d="M12 2C12 2 5 10.5 5 15a7 7 0 0014 0C19 10.5 12 2 12 2z" />
             </svg>
           </span>
           <span class="logo-text">دمي</span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-          <span class="navbar-toggler-icon"></span>
-        </button>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             {% if user.is_authenticated %}
               {% if user.role == 'donor' %}
                 <li class="nav-item">
-                  <a class="nav-link{% if request.resolver_match.url_name == 'donor_dashboard' %} active{% endif %}" href="{% url 'donor_dashboard' %}">
-                    <i class="bi bi-speedometer2 me-1"></i>لوحة المتبرع
-                  </a>
+                  <a class="nav-link{% if request.resolver_match.url_name == 'donor_dashboard' %} active{% endif %}" href="{% url 'donor_dashboard' %}"><i class="bi bi-speedometer2 me-1"></i>لوحة المتبرع</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link{% if request.resolver_match.url_name == 'request_list' %} active{% endif %}" href="{% url 'request_list' %}">
-                    <i class="bi bi-list-ul me-1"></i>الطلبات
-                  </a>
+                  <a class="nav-link{% if request.resolver_match.url_name == 'request_list' %} active{% endif %}" href="{% url 'request_list' %}"><i class="bi bi-list-ul me-1"></i>الطلبات</a>
                 </li>
               {% elif user.role == 'hospital' %}
                 <li class="nav-item">
-                  <a class="nav-link{% if request.resolver_match.url_name == 'hospital_dashboard' %} active{% endif %}" href="{% url 'hospital_dashboard' %}">
-                    <i class="bi bi-hospital me-1"></i>لوحة المستشفى
-                  </a>
+                  <a class="nav-link{% if request.resolver_match.url_name == 'hospital_dashboard' %} active{% endif %}" href="{% url 'hospital_dashboard' %}"><i class="bi bi-hospital me-1"></i>لوحة المستشفى</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link{% if request.resolver_match.url_name == 'create_blood_request' %} active{% endif %}" href="{% url 'create_blood_request' %}">
-                    <i class="bi bi-plus-circle me-1"></i>طلب دم جديد
-                  </a>
+                  <a class="nav-link{% if request.resolver_match.url_name == 'create_blood_request' %} active{% endif %}" href="{% url 'create_blood_request' %}"><i class="bi bi-plus-circle me-1"></i>طلب دم جديد</a>
                 </li>
               {% endif %}
             {% endif %}
@@ -69,9 +67,7 @@
                 <span class="nav-link user-greeting">{{ user.get_full_name|default:user.email }}</span>
               </li>
               <li class="nav-item">
-                <a class="nav-link{% if request.resolver_match.url_name == 'edit_profile' %} active{% endif %}" href="{% url 'edit_profile' %}">
-                  <i class="bi bi-person me-1"></i>الملف الشخصي
-                </a>
+                <a class="nav-link{% if request.resolver_match.url_name == 'edit_profile' %} active{% endif %}" href="{% url 'edit_profile' %}"><i class="bi bi-person me-1"></i>الملف الشخصي</a>
               </li>
               <li class="nav-item d-flex align-items-center ms-1">
                 <form method="post" action="{% url 'logout' %}" class="d-inline">
@@ -93,7 +89,6 @@
     </nav>
 
     <main class="container py-4">
-
       <div class="callout-box text-center">
         <p class="mb-1 fw-bold" style="font-size:1rem;color:var(--text);">"وَمَنْ أَحْيَاهَا فَكَأَنَّمَا أَحْيَا النَّاسَ جَمِيعًا"</p>
         <small style="color:var(--text-muted);">— سورة المائدة، الآية 32</small>
@@ -108,17 +103,21 @@
         {% endfor %}
       {% endif %}
 
-      {% block content %}{% endblock %}
+      {% block content %}
+      {% endblock %}
     </main>
 
     <footer class="site-footer">
       <div class="container text-center">
-        <p>منصة <strong style="color:var(--red);">دمي</strong> — شبكة التبرع بالدم في قطاع غزة</p>
+        <p>
+          منصة <strong style="color:var(--red);">دمي</strong> — شبكة التبرع بالدم في قطاع غزة
+        </p>
       </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/donations.js' %}"></script>
-    {% block extra_js %}{% endblock %}
+    {% block extra_js %}
+    {% endblock %}
   </body>
 </html>

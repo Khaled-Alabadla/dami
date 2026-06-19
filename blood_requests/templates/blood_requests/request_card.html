@@ -1,39 +1,39 @@
-<div class="request-card blood-{{ request.blood_type_needed|slugify }}" data-request-id="{{ request.id }}">
-  <div class="blood-type-badge blood-{{ request.blood_type_needed|slugify }}">{{ request.blood_type_needed }}</div>
-  <div class="request-info">
-    <h3>{{ request.hospital.get_full_name }}</h3>
-    <div class="text-muted mb-1">
-      <i class="bi bi-geo-alt"></i> {{ request.hospital.city }}
+<div class="request-card" data-request-id="{{ request.id }}">
+  <div class="rc-header">
+    <span class="rc-badge blood-{{ request.blood_type_needed|slugify }}">{{ request.blood_type_needed }}</span>
+    <div class="rc-title">
+      <h3>{{ request.hospital.get_full_name }}</h3>
+      <span class="rc-meta"><i class="bi bi-geo-alt"></i> {{ request.hospital.city }}</span>
     </div>
-    <div class="text-muted mb-2">
-      <i class="bi bi-building"></i> {{ request.hospital_branch_address }}
-    </div>
-    <div class="progress-bar-custom">
-      <div class="fill" style="width: {{ request.fulfillment_percentage }}%"></div>
-    </div>
-    <span class="bags-count">
-      {{ request.bags_received }} / {{ request.bags_required }} أكياس
-      {% if request.bags_remaining > 0 %}
-        <span class="bags-remaining">(متبقٍ {{ request.bags_remaining }})</span>
-      {% endif %}
-    </span>
   </div>
 
+  <div class="rc-address">
+    <i class="bi bi-building"></i> {{ request.hospital_branch_address }}
+  </div>
+
+  <div class="rc-progress">
+    <div class="rc-fill" style="width: {{ request.fulfillment_percentage }}%"></div>
+  </div>
+  <span class="rc-bags">
+    {{ request.bags_received }} / {{ request.bags_required }} أكياس
+    {% if request.bags_remaining > 0 %}
+      <span class="rc-remaining">· متبقٍ {{ request.bags_remaining }}</span>
+    {% endif %}
+  </span>
+
   {% if completed_ids and request.id in completed_ids %}
-    <button class="btn-commit btn-completed" disabled>
-      <i class="bi bi-heart-fill me-1"></i>شكراً لإسهامك — تبرعك قد ينقذ حياة
-    </button>
+    <button class="btn-commit btn-completed" disabled><i class="bi bi-heart-fill me-1"></i>شكراً لإسهامك — تبرعك قد ينقذ حياة</button>
+
   {% elif committed_ids and request.id in committed_ids %}
-    <button class="btn-commit btn-committed" disabled>
-      <i class="bi bi-check-circle-fill me-1"></i>أنت ملتزم بهذه الحالة
-    </button>
+    <button class="btn-commit btn-committed" disabled><i class="bi bi-check-circle-fill me-1"></i>أنت ملتزم بهذه الحالة</button>
+
+  {% elif is_donor_available is False %}
+    <button class="btn-commit btn-blocked" disabled><i class="bi bi-calendar-x me-1"></i>غير مؤهل للتبرع حالياً (فترة راحة)</button>
+
   {% elif has_going_commitment %}
-    <button class="btn-commit btn-blocked" disabled title="أنهِ التزامك الحالي أولاً">
-      <i class="bi bi-hourglass-split me-1"></i>لديك التزام قائم بحالة أخرى
-    </button>
+    <button class="btn-commit btn-blocked" disabled><i class="bi bi-hourglass-split me-1"></i>لديك التزام قائم بحالة أخرى</button>
+
   {% else %}
-    <button class="btn-commit" onclick="commitToDonate({{ request.id }})">
-      <i class="bi bi-heart me-1"></i>أنا قادم للتبرع
-    </button>
+    <button class="btn-commit" onclick="commitToDonate({{ request.id }})"><i class="bi bi-heart me-1"></i>أنا قادم للتبرع</button>
   {% endif %}
 </div>

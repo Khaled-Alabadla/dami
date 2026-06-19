@@ -39,6 +39,6 @@ class BloodRequestForm(forms.ModelForm):
         labels = {
             'patient_name_hidden': 'اسم المريض المرجعي (سري)',
             'blood_type_needed': 'فصيلة الدم المطلوبة',
-            'bags_required': 'عدد أكياس الدم المطلوبة',
+            'bags_required': 'عدد وحدات الدم المطلوبة',
             'hospital_branch_address': 'عنوان فرع/قسم المستشفى بدقة',
         }
