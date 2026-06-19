@@ -1,5 +1,7 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
 from accounts.decorators import donor_required
 from blood_requests.compatibility import compatible_recipient_types
@@ -10,22 +12,6 @@ from donations.models import DonationRecord
 @login_required
 @donor_required
 def donor_dashboard(request):
-    """
-    Render the donor's personalised dashboard.
-
-    Shows only active blood requests that match both the donor's blood type
-    (using the biological compatibility map) and their city. If the donor is
-    within the 90-day cooldown window, the request grid is hidden entirely.
-
-    Context variables injected into the template:
-      - matching_requests:    QuerySet of compatible active BloodRequests
-      - donor_profile:        The donor's DonorProfile instance
-      - days_remaining:       Days left in the cooldown period (0 if eligible)
-      - committed_ids:        Set of BloodRequest PKs with a 'going' record
-      - completed_ids:        Set of BloodRequest PKs with a 'completed' record
-      - donation_records:     Full donation history for the history table
-      - has_going_commitment: True if the donor has any in-progress commitment
-    """
     user = request.user
     profile = user.donor_profile
     profile.update_availability()
@@ -69,3 +55,24 @@ def donor_dashboard(request):
         'has_going_commitment': has_going_commitment,
     }
     return render(request, 'donors/dashboard.html', context)
+
+
+@require_POST
+@login_required
+@donor_required
+def toggle_notifications(request):
+    """
+    Toggle the donor's email_notifications preference on or off.
+
+    Reads the 'enabled' checkbox from the submitted form. A missing field
+    (unchecked checkbox) means the user wants notifications off.
+    Redirects back to the profile edit page after saving.
+    """
+    profile = request.user.donor_profile
+    profile.email_notifications = request.POST.get('enabled') == 'on'
+    profile.save(update_fields=['email_notifications'])
+    if profile.email_notifications:
+        messages.success(request, 'تم تفعيل إشعارات البريد الإلكتروني.')
+    else:
+        messages.info(request, 'تم إيقاف إشعارات البريد الإلكتروني.')
+    return redirect('edit_profile')

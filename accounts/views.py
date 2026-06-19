@@ -48,6 +48,7 @@ def register_donor(request):
                 first_name=form.cleaned_data['first_name'],
                 last_name=form.cleaned_data['last_name'],
                 phone_number=form.cleaned_data['phone_number'],
+                address=form.cleaned_data.get('address', ''),
                 city=form.cleaned_data['city'],
                 blood_type=form.cleaned_data['blood_type'],
                 role='donor',
@@ -91,12 +92,12 @@ def verify_email(request, token):
 
     if user.is_active:
         messages.info(request, 'تم تفعيل بريدك الإلكتروني مسبقاً. يمكنك تسجيل الدخول.')
-        return redirect('login')
+        return redirect('donor_dashboard')
 
     user.is_active = True
     user.save(update_fields=['is_active'])
     messages.success(request, 'تم تأكيد بريدك الإلكتروني بنجاح! مرحباً بك في منصة دمي 🩸')
-    return redirect('login')
+    return redirect('donor_dashboard')
 
 
 @require_POST

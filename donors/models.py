@@ -19,6 +19,11 @@ class DonorProfile(models.Model):
         default=True,
         help_text="False = ضمن فترة الحظر الصحي (90 يوماً)",
     )
+    email_notifications = models.BooleanField(
+        default=True,
+        verbose_name='إشعارات البريد الإلكتروني',
+        help_text='إرسال بريد إلكتروني عند وجود حالة عاجلة تطابق فصيلة الدم',
+    )
 
     def update_availability(self):
         """

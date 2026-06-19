@@ -1,26 +1,39 @@
-{% load static %}
 <div class="request-card blood-{{ request.blood_type_needed|slugify }}" data-request-id="{{ request.id }}">
   <div class="blood-type-badge blood-{{ request.blood_type_needed|slugify }}">{{ request.blood_type_needed }}</div>
   <div class="request-info">
     <h3>{{ request.hospital.get_full_name }}</h3>
-    <div class="text-muted small mb-1">📍 {{ request.hospital.city }}</div>
-    <div class="text-muted small mb-2">🏥 {{ request.hospital_branch_address }}</div>
+    <div class="text-muted mb-1">
+      <i class="bi bi-geo-alt"></i> {{ request.hospital.city }}
+    </div>
+    <div class="text-muted mb-2">
+      <i class="bi bi-building"></i> {{ request.hospital_branch_address }}
+    </div>
     <div class="progress-bar-custom">
       <div class="fill" style="width: {{ request.fulfillment_percentage }}%"></div>
     </div>
-    <span class="bags-count">{{ request.bags_received }} / {{ request.bags_required }} أكياس
+    <span class="bags-count">
+      {{ request.bags_received }} / {{ request.bags_required }} أكياس
       {% if request.bags_remaining > 0 %}
         <span class="bags-remaining">(متبقٍ {{ request.bags_remaining }})</span>
       {% endif %}
     </span>
   </div>
+
   {% if completed_ids and request.id in completed_ids %}
-    <button class="btn-commit btn-completed" disabled>🤲 شكراً لإسهامك، ربما يكون تبرعك هذا سبباً في إنقاذ نفس</button>
+    <button class="btn-commit btn-completed" disabled>
+      <i class="bi bi-heart-fill me-1"></i>شكراً لإسهامك — تبرعك قد ينقذ حياة
+    </button>
   {% elif committed_ids and request.id in committed_ids %}
-    <button class="btn-commit btn-committed" disabled>✅ أنت ملتزم بهذه الحالة</button>
+    <button class="btn-commit btn-committed" disabled>
+      <i class="bi bi-check-circle-fill me-1"></i>أنت ملتزم بهذه الحالة
+    </button>
   {% elif has_going_commitment %}
-    <button class="btn-commit btn-blocked" disabled title="أنهِ التزامك الحالي أولاً">⏳ لديك التزام قائم بحالة أخرى</button>
+    <button class="btn-commit btn-blocked" disabled title="أنهِ التزامك الحالي أولاً">
+      <i class="bi bi-hourglass-split me-1"></i>لديك التزام قائم بحالة أخرى
+    </button>
   {% else %}
-    <button class="btn-commit" onclick="commitToDonate({{ request.id }})">أنا قادم للتبرع <img width="35px" src="{% static 'images/blood.webp' %}" alt="" /></button>
+    <button class="btn-commit" onclick="commitToDonate({{ request.id }})">
+      <i class="bi bi-heart me-1"></i>أنا قادم للتبرع
+    </button>
   {% endif %}
 </div>

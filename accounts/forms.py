@@ -35,13 +35,19 @@ class DonorRegistrationForm(forms.ModelForm):
         queryset=City.objects.all(),
         empty_label='— اختر المدينة —',
     )
+    address = forms.CharField(
+        label='العنوان التفصيلي',
+        max_length=255,
+        required=False,
+        widget=forms.TextInput(),
+    )
     blood_type = forms.ChoiceField(label='فصيلة الدم', choices=User.BLOOD_CHOICES)
     password = forms.CharField(label='كلمة المرور', widget=forms.PasswordInput())
     password_confirm = forms.CharField(label='تأكيد كلمة المرور', widget=forms.PasswordInput())
 
     class Meta:
         model = User
-        fields = ('email', 'first_name', 'last_name', 'phone_number', 'city', 'blood_type')
+        fields = ('email', 'first_name', 'last_name', 'phone_number', 'city', 'address', 'blood_type')
 
     def clean(self):
         """Validate that both password fields match."""
@@ -66,7 +72,7 @@ class DonorRegistrationForm(forms.ModelForm):
 class UserProfileForm(forms.ModelForm):
     """Profile edit form; hides blood_type for non-donor accounts."""
 
-    first_name = forms.CharField(label='الاسم الأول', max_length=150)
+    first_name = forms.CharField(label='الاسم الأول / اسم الجهة', max_length=150)
     last_name = forms.CharField(label='اسم العائلة', max_length=150, required=False)
     phone_number = forms.CharField(label='رقم الهاتف', max_length=15)
     city = forms.ModelChoiceField(
@@ -74,10 +80,16 @@ class UserProfileForm(forms.ModelForm):
         queryset=City.objects.all(),
         empty_label='— اختر المدينة —',
     )
+    address = forms.CharField(
+        label='العنوان التفصيلي',
+        max_length=255,
+        required=False,
+        widget=forms.TextInput(),
+    )
 
     class Meta:
         model = User
-        fields = ('email', 'first_name', 'last_name', 'phone_number', 'city', 'blood_type')
+        fields = ('email', 'first_name', 'last_name', 'phone_number', 'city', 'address', 'blood_type')
         labels = {
             'email': 'البريد الإلكتروني',
             'blood_type': 'فصيلة الدم',

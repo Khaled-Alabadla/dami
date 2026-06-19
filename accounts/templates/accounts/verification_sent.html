@@ -1,73 +1,39 @@
 {% extends 'base.html' %}
-{% load static %}
 
-{% block title %}
-  تحقق من بريدك الإلكتروني
-{% endblock %}
+{% block title %}تحقق من بريدك الإلكتروني{% endblock %}
 
 {% block content %}
   <div class="row justify-content-center">
-    <div class="col-md-6">
+    <div class="col-md-5">
       <div class="auth-card text-center">
-        <div class="verification-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
-            <rect x="2" y="4" width="20" height="16" rx="2" />
-            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-          </svg>
+
+        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center"
+             style="width:80px;height:80px;border-radius:50%;background:var(--red-light);border:2px solid rgba(192,57,43,0.12);">
+          <i class="bi bi-envelope-check" style="font-size:2rem;color:var(--red);"></i>
         </div>
-        <h2 class="mt-3 mb-2">تحقق من بريدك الإلكتروني</h2>
+
+        <h2 class="mb-2">تحقق من بريدك الإلكتروني</h2>
         <p class="text-muted mb-4">
           أرسلنا إليك رابط تفعيل. يرجى فتح بريدك الإلكتروني والضغط على الرابط لتفعيل حسابك.
-          <br />
-          <small>الرابط صالح لمدة <strong>24 ساعة</strong>.</small>
+          <br /><small>الرابط صالح لمدة <strong>24 ساعة</strong>.</small>
         </p>
-        <div class="verification-tips">
-          <p class="tip-item">
+
+        <div class="text-start mb-4" style="background:var(--bg);border-radius:var(--radius-md);padding:1rem 1.25rem;">
+          <div class="d-flex align-items-center gap-2 mb-2" style="font-size:0.88rem;color:var(--text-sec);">
+            <i class="bi bi-info-circle text-muted"></i>
             تحقق من مجلد <strong>البريد العشوائي (Spam)</strong> إذا لم تجد الرسالة.
-          </p>
-          <p class="tip-item">قد تستغرق الرسالة دقيقة أو دقيقتين للوصول.</p>
+          </div>
+          <div class="d-flex align-items-center gap-2" style="font-size:0.88rem;color:var(--text-sec);">
+            <i class="bi bi-clock text-muted"></i>
+            قد تستغرق الرسالة دقيقة أو دقيقتين للوصول.
+          </div>
         </div>
+
         <hr />
-        <a href="{% url 'login' %}" class="btn btn-primary mt-2">العودة لتسجيل الدخول</a>
+        <a href="{% url 'login' %}" class="btn btn-primary mt-2">
+          <i class="bi bi-arrow-right me-1"></i>العودة لتسجيل الدخول
+        </a>
       </div>
     </div>
   </div>
-{% endblock %}
-
-{% block extra_css %}
-  <style>
-    .verification-icon {
-      width: 100px;
-      height: 100px;
-      background: var(--primary-light);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 1rem;
-      border: 2px solid rgba(192, 57, 43, 0.12);
-    }
-    .verification-tips {
-      background: var(--bg);
-      border-radius: var(--radius-md);
-      padding: 1.25rem;
-      text-align: right;
-      margin: 1rem 0;
-    }
-    .tip-item {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      margin-bottom: 0.5rem;
-      font-size: 0.9rem;
-      color: var(--text-muted);
-    }
-    .tip-item:last-child {
-      margin-bottom: 0;
-    }
-    .tip-icon {
-      font-size: 1.1rem;
-      flex-shrink: 0;
-    }
-  </style>
 {% endblock %}

@@ -54,6 +54,10 @@ class User(AbstractUser):
     email = models.EmailField(unique=True, verbose_name='البريد الإلكتروني')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='donor')
     phone_number = models.CharField(max_length=15, blank=True)
+    address = models.CharField(
+        max_length=255, blank=True,
+        verbose_name='العنوان التفصيلي',
+    )
     city = models.ForeignKey(
         City, on_delete=models.PROTECT,
         related_name='users',

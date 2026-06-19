@@ -1,11 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}
-  قائمة الطلبات
-{% endblock %}
+{% block title %}قائمة الطلبات{% endblock %}
 
 {% block content %}
-  <h1 class="section-title">📋 طلبات الدم</h1>
+  <h1 class="section-title">طلبات الدم</h1>
 
   {% if requests_list %}
     <div class="requests-grid">
@@ -17,11 +15,13 @@
             <div class="blood-type-badge blood-{{ req.blood_type_needed|slugify }}">{{ req.blood_type_needed }}</div>
             <div class="request-info">
               <h3>{{ req.hospital.get_full_name }}</h3>
-              <div class="text-muted small mb-2">📍 {{ req.hospital.city }}</div>
+              <div class="text-muted mb-2">
+                <i class="bi bi-geo-alt"></i> {{ req.hospital.city }}
+              </div>
               <div class="progress-bar-custom">
                 <div class="fill" style="width: {{ req.fulfillment_percentage }}%"></div>
               </div>
-              <span>{{ req.bags_received }} / {{ req.bags_required }} أكياس — {{ req.get_status_display }}</span>
+              <span class="bags-count">{{ req.bags_received }} / {{ req.bags_required }} أكياس — {{ req.get_status_display }}</span>
             </div>
           </div>
         {% endif %}
@@ -29,6 +29,7 @@
     </div>
   {% else %}
     <div class="empty-state">
+      <div class="empty-icon"><i class="bi bi-inbox"></i></div>
       <p>لا توجد طلبات حالياً.</p>
     </div>
   {% endif %}

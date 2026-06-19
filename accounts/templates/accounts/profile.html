@@ -1,23 +1,22 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}
-  الملف الشخصي
-{% endblock %}
+{% block title %}الملف الشخصي{% endblock %}
 
 {% block content %}
   <div class="row justify-content-center">
     <div class="col-md-7">
       <div class="auth-card">
-        <h2 class="text-center mb-2">تعديل الملف الشخصي</h2>
-        <p class="text-muted text-center mb-4">تحديث البيانات الخاصة بحسابك على المنصة</p>
+        <h2 class="mb-1">تعديل الملف الشخصي</h2>
+        <p class="text-muted small mb-4">تحديث البيانات الخاصة بحسابك</p>
 
         <form method="post" novalidate>
           {% csrf_token %}
           {{ form|crispy }}
-
           <div class="d-flex gap-2 mt-4">
-            <button type="submit" class="btn btn-primary flex-grow-1">حفظ التغييرات</button>
+            <button type="submit" class="btn btn-primary flex-grow-1">
+              <i class="bi bi-check-lg me-1"></i>حفظ التغييرات
+            </button>
             {% if user.role == 'donor' %}
               <a href="{% url 'donor_dashboard' %}" class="btn btn-outline-secondary">إلغاء</a>
             {% elif user.role == 'hospital' %}
@@ -27,6 +26,38 @@
             {% endif %}
           </div>
         </form>
+
+        {% if user.role == 'donor' %}
+          <hr class="my-4">
+          <div>
+            <h5 class="mb-1" style="font-size:1rem;font-weight:700;">إشعارات البريد الإلكتروني</h5>
+            <p class="text-muted small mb-3">
+              عند إضافة حالة عاجلة تطابق فصيلة دمك وتقع في مدينتك، سنُرسل لك بريداً إلكترونياً.
+            </p>
+            <form method="post" action="{% url 'toggle_notifications' %}">
+              {% csrf_token %}
+              <div class="d-flex align-items-center gap-3">
+                <div class="form-check form-switch mb-0">
+                  <input class="form-check-input" type="checkbox" role="switch"
+                         id="notifSwitch" name="enabled"
+                         {% if user.donor_profile.email_notifications %}checked{% endif %}
+                         onchange="this.form.submit()">
+                  <label class="form-check-label fw-semibold" for="notifSwitch"
+                         style="color:{% if user.donor_profile.email_notifications %}var(--success){% else %}var(--text-muted){% endif %};">
+                    {% if user.donor_profile.email_notifications %}مفعّلة{% else %}موقوفة{% endif %}
+                  </label>
+                </div>
+                <small class="text-muted">
+                  {% if user.donor_profile.email_notifications %}
+                    ستصلك إشعارات عند وجود حالة عاجلة.
+                  {% else %}
+                    لن تصلك إشعارات بريدية عن الحالات العاجلة.
+                  {% endif %}
+                </small>
+              </div>
+            </form>
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>

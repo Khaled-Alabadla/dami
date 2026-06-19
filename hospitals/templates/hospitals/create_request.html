@@ -1,23 +1,27 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}
-  طلب دم جديد
-{% endblock %}
+{% block title %}طلب دم جديد{% endblock %}
 
 {% block content %}
   <div class="row justify-content-center">
     <div class="col-md-7">
       <div class="auth-card">
-        <h2 class="mb-4">🩸 إنشاء طلب دم طارئ</h2>
-        <div class="alert alert-info">
-          <small>⚠️ اسم المريض سري ولن يُعرض للمتبرعين أبداً.</small>
+        <h2 class="mb-1">إنشاء طلب دم طارئ</h2>
+        <p class="text-muted small mb-4">أدخل بيانات الطلب. سيتم إشعار المتبرعين المؤهلين في مدينتك فور النشر.</p>
+
+        <div class="alert alert-info mb-4">
+          <i class="bi bi-shield-lock me-1"></i>
+          <small>اسم المريض سري ولن يُعرض للمتبرعين.</small>
         </div>
+
         <form method="post">
           {% csrf_token %}
           {{ form|crispy }}
-          <div class="d-flex gap-2 mt-3">
-            <button type="submit" class="btn btn-primary">نشر الطلب</button>
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary flex-grow-1">
+              <i class="bi bi-send me-1"></i>نشر الطلب
+            </button>
             <a href="{% url 'hospital_dashboard' %}" class="btn btn-outline-secondary">إلغاء</a>
           </div>
         </form>
