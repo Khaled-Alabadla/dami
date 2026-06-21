@@ -352,14 +352,18 @@ def send_email(to: str, subject: str, html_body: str, text_body: str = None) -> 
     """
     Dispatch an email through Django's configured EMAIL_BACKEND.
 
-    In development (no Gmail credentials in .env), the backend is
-    console.EmailBackend and the message is printed to the terminal.
-    In production (GMAIL_USER + GMAIL_APP_PASSWORD set), the backend is
-    smtp.EmailBackend and the message is delivered via Gmail.
-
     Returns True on success, False on any exception.
+    The full exception is always written to the logger so it appears
+    in the PythonAnywhere error log (or the dev console).
     """
     text_body = text_body or _strip_html(html_body)
+    logger.debug(
+        'Sending email | backend=%s | from=%s | to=%s | subject=%s',
+        settings.EMAIL_BACKEND,
+        settings.DEFAULT_FROM_EMAIL,
+        to,
+        subject,
+    )
     try:
         send_mail(
             subject=subject,
@@ -369,9 +373,10 @@ def send_email(to: str, subject: str, html_body: str, text_body: str = None) -> 
             html_message=html_body,
             fail_silently=False,
         )
+        logger.debug('Email sent successfully to %s', to)
         return True
-    except Exception:
-        logger.exception('Failed to send email to %s', to)
+    except Exception as exc:
+        logger.exception('Failed to send email to %s — %s: %s', to, type(exc).__name__, exc)
         return False
 
 

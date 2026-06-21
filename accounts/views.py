@@ -54,7 +54,15 @@ def register_donor(request):
                 role='donor',
                 is_active=False,
             )
-            send_verification_email(user, request)
+            sent = send_verification_email(user, request)
+            if not sent:
+                # Delete the inactive user so the email can be reused on retry
+                user.delete()
+                messages.error(
+                    request,
+                    'فشل إرسال بريد التحقق. يرجى المحاولة مجدداً أو التواصل مع الدعم الفني.',
+                )
+                return render(request, 'accounts/register_donor.html', {'form': form})
             return redirect('verification_sent')
     else:
         form = DonorRegistrationForm()

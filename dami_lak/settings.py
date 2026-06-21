@@ -224,3 +224,14 @@ LOGGING = {
         'accounts':       {'handlers': ['console'], 'level': 'DEBUG', 'propagate': False},
     },
 }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'dami',     
+        'USER': 'root',              
+        'PASSWORD': 'root', 
+        'HOST': 'localhost',        
+        'PORT': '3306',             
+    }
+}
