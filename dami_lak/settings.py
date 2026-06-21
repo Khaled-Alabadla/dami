@@ -94,6 +94,24 @@ LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/donor/dashboard/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {'format': '[%(levelname)s] %(name)s: %(message)s'},
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'blood_requests': {'handlers': ['console'], 'level': 'DEBUG', 'propagate': False},
+        'accounts':       {'handlers': ['console'], 'level': 'DEBUG', 'propagate': False},
+    },
+}
+
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
